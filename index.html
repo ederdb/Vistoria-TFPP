@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vistoria Ferroviária</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#006400">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="TFPP">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 20px;
+        }
+        .container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .linha-orgao {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        h1 {
+            color: #006400;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #006400;
+            border-bottom: 2px solid #006400;
+            padding-bottom: 6px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+        }
+        h3, .subsecao {
+            font-size: 16px;
+            font-weight: bold;
+            color: #006400;
+            background: #eef7ee;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #006400;
+            border-radius: 0 5px 5px 0;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .normativa {
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+            background: #eef7ee;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            margin: 10px 0 20px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .campo {
+            display: flex;
+            flex-direction: column;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .botao {
+            margin-top: 25px;
+            background: #006400;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .botao:hover {
+            background: #008000;
+        }
+        .assinatura {
+            border: 2px solid #ccc;
+            background: white;
+            width: 100%;
+            height: 150px;
+            touch-action: none;
+            display: block;
+        }
+        .btn-limpar {
+            margin-top: 10px;
+            background: #666;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .card-irregularidade {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .btn-remover {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .opcoes-avaliacao {
+            margin-top: 8px;
+        }
+        .opcoes-avaliacao label {
+            display: inline-block;
+            margin-right: 20px;
+            font-weight: normal;
+        }
+        .campo-desacordo {
+            margin-top: 10px;
+            display: none;
+        }
+        .campo-equipe {
+            grid-column: 1 / -1;
+        }
+        .lista-equipe {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .membro-equipe {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .membro-equipe input {
+            flex: 1;
+        }
+        .membro-equipe .btn-remover {
+            margin-top: 0;
+        }
+        .btn-adicionar-membro {
+            margin-top: 10px;
+            align-self: flex-start;
+        }
+        #coordenadas[readonly] {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .ignorar-no-pdf {
+            display: none !important;
+        }
+        
+      /* Esconde o botão de arquivo e o caminho FAKEPATH apenas quando o PDF é gerado */
+.ocultar-input-pdf {
+    display: block;
+}
+.html2pdf__container .ocultar-input-pdf {
+    display: none !important;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container" id="conteudoFormulario">
+
+        <div class="cabecalho">
+            <div class="linha-orgao">INSTITUTO BRASILEIRO DO MEIO AMBIENTE E DOS RECURSOS NATURAIS RENOVÁVEIS - IBAMA</div>
+            <div class="linha-orgao">DIRETORIA DE PROTEÇÃO AMBIENTAL – DIPRO</div>
+            <div class="linha-orgao">CENTRO NACIONAL DE EMERGÊNCIAS AMBIENTAIS E CLIMÁTICAS - CENEAC</div>
+            <h1>Transporte Ferroviário de Produtos Perigosos</h1>
+        </div>
+
+        <h2>Dados da Vistoria</h2>
+        <h3>Equipe de Fiscalização</h3>
+
+        <div class="grid">
+            <div class="campo">
+                <label for="dataVistoria">Data da Vistoria</label>
+                <input type="date" id="dataVistoria">
+            </div>
+
+            <div class="campo">
+                <label for="horaVistoria">Hora</label>
+                <input type="time" id="horaVistoria">
+            </div>
+
+            <div class="campo campo-equipe">
+                <label>Equipe</label>
+                <div id="listaEquipe" class="lista-equipe">
+                    <div class="membro-equipe">
+                        <input type="text" class="membroEquipe" aria-label="Membro da equipe">
+                        <button type="button" class="btn-remover" onclick="removerMembro(this)">Remover</button>
+                    </div>
+                </div>
+                <button type="button" class="botao btn-adicionar-membro" onclick="adicionarMembro()">
+                    + Adicionar Membro
+                </button>
+            </div>
+
+            <div class="campo">
+                <label for="coordenadas">Coordenadas Geográficas</label>
+                <input type="text" id="coordenadas" readonly placeholder="Obtendo localização via GPS...">
+                <button type="button" class="btn-limpar" style="align-self:flex-start;" onclick="obterCoordenadas()">
+                    Atualizar localização
+                </button>
+            </div>
+        </div>
+
+        <h3>Dados da Empresa e da Composição</h3>
+        <div class="grid">
+            <div class="campo">
+                <label for="empresa">Empresa</label>
+                <input type="text" id="empresa">
+            </div>
+            <div class="campo">
+                <label for="cnpj">CNPJ</label>
+                <input type="text" id="cnpj">
+            </div>
+            <div class="campo">
+                <label for="ferrovia">Nome da Ferrovia</label>
+                <input type="text" id="ferrovia">
+            </div>
+            <div class="campo">
+                <label for="trecho">Trecho</label>
+                <input type="text" id="trecho">
+            </div>
+            <div class="campo">
+                <label for="patio">Nome do Pátio</label>
+                <input type="text" id="patio">
+            </div>
+            <div class="campo">
+                <label for="composicao">Número da Composição</label>
+                <input type="text" id="composicao">
+            </div>
+            <div class="campo">
+                <label for="vagoes">Quantidade de Vagões</label>
+                <input type="number" id="vagoes">
+            </div>
+            <div class="campo">
+                <label for="produto">Produto</label>
+                <input type="text" id="produto">
+            </div>
+            <div class="campo">
+                <label for="onu">Nº ONU</label>
+                <input type="text" id="onu">
+            </div>
+            <div class="campo">
+                <label for="classe">Classe</label>
+                <input type="text" id="classe">
+            </div>
+            <div class="campo">
+                <label for="tipoCarga">Tipo de Carga</label>
+                <select id="tipoCarga">
+                    <option value="">Selecione</option>
+                    <option>Fracionado</option>
+                    <option>Granel</option>
+                </select>
+            </div>
+        </div>
+
+        <h2>1. Documentação Ambiental</h2>
+        <div class="grid">
+            <div class="campo">
+                <label for="licencaAmbiental">1.1 Licença Ambiental</label>
+                <select id="licencaAmbiental">
+                    <option value="">Selecione</option>
+                    <option>Válida</option>
+                    <option>Em regularização</option>
+                    <option>Não possui</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="autorizacaoIbama">1.2 Autorização IBAMA</label>
+                <select id="autorizacaoIbama">
+                    <option value="">Selecione</option>
+                    <option>Possui</option>
+                    <option>Não possui</option>
+                    <option>Não se aplica</option>
+                </select>
+            </div>
+        </div>
+
+        <h2>2. Desrespeito às Condições ou Proibição de Transporte</h2>
+        <div class="normativa">Conforme Decreto nº 98.973/90</div>
+        <div class="subsecao">2.1 Identificação do produto in documentos, identificação de vagões e embalagens de produtos classificados como perigosos</div>
+
+        <div class="grid">
+            <div class="campo">
+                <label>2.1.1 Ficha de Emergência e Envelope para Transporte - Art. 30, II</label>
+                <div class="opcoes-avaliacao">
+                    <label><input type="radio" name="fichaEmergencia" value="Conforme" onchange="document.getElementById('descFicha').style.display = 'none'" checked> Conforme</label>
+                    <label><input type="radio" name="fichaEmergencia" value="Em desacordo" onchange="document.getElementById('descFicha').style.display = 'block'"> Em desacordo</label>
+                </div>
+                <div id="descFicha" class="campo-desacordo">
+                    <label>Descrever a irregularidade encontrada</label>
+                    <textarea id="descFichaTexto" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="campo">
+                <label for="declaracaoCarga">2.1.2 Declaração de Carga emitida pelo Expedidor - Art. 30, inciso I</label>
+                <select id="declaracaoCarga">
+                    <option value="">Selecione</option>
+                    <option>Correta</option>
+                    <option>Incorreta</option>
+                    <option>Parcialmente correta</option>
+                    <option>Não possui</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="paineisSeguranca">2.1.3 Painéis de Segurança - Art. 8°</label>
+                <select id="paineisSeguranca">
+                    <option value="">Selecione</option>
+                    <option>Corretos</option>
+                    <option>Parcialmente corretos</option>
+                    <option>Incorretos</option>
+                    <option>Não possui</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="rotulosRisco">2.1.4 Rótulos de Risco - Art. 8°</label>
+                <select id="rotulosRisco">
+                    <option value="">Selecione</option>
+                    <option>Identificação correta</option>
+                    <option>Identificação danificada</option>
+                    <option>Identificação incorreta</option>
+                    <option>Não possui</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="identificacaoEmbalagens">2.1.5 Identificação das Embalagens - Art. 18</label>
+                <select id="identificacaoEmbalagens">
+                    <option value="">Selecione</option>
+                    <option>Correta</option>
+                    <option>Incorreta</option>
+                    <option>Não possui identificação</option>
+                    <option>Não se aplica</option>
+                </select>
+            </div>
+        </div>
+
+        <h2>2.2 Irregularidades no Transporte</h2>
+        <div class="grid">
+            <div class="campo">
+                <label for="item221">2.2.1 Transporte de Produtos Perigosos em trens de passageiros ou mistos - Art. 10</label>
+                <select id="item221"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item222">2.2.2 Transporte de Produtos incompatíveis entre si em um mesmo vagão - § 1°, Art. 19</label>
+                <select id="item222"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item223">2.2.3 Produtos Perigosos transportados com alimentos ou medicamentos - § 2°, Art. 19</label>
+                <select id="item223"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item224">2.2.4 Transporte de animais com produto perigoso - § 3°, Art. 19</label>
+                <select id="item224"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item225">2.2.5 Presença na locomotiva de vagão-plataforma com toras ou estruturas - Art. 11</label>
+                <select id="item225"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item226">2.2.6 Vagão parado apresenta o devido fechamento e isolamento - Art. 22</label>
+                <select id="item226"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item227">2.2.7 Conjunto de Equipamentos de Emergência - Art. 4, Inciso I</label>
+                <select id="item227"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item228">2.2.8 Equipamentos de Proteção Individual (EPI) - Art. 4, II</label>
+                <select id="item228"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item229">2.2.9 Equipamentos de Comunicação - Art. 4, III</label>
+                <select id="item229"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item2210">2.2.10 Condutor adequadamente trajado</label>
+                <select id="item2210"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item2211">2.2.11 Materiais de Primeiros Socorros - Art. 4, IV</label>
+                <select id="item2211"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item2212">2.2.12 Dispositivo de Homem Morto - Art. 4, Parágrafo Único</label>
+                <select id="item2212"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="campo">
+                <label for="item2213">2.2.13 Velocímetro Registrador - Parágrafo Único</label>
+                <select id="item2213"><option value="">Selecione</option><option>Sim</option><option>Não</option></select>
+            </div>
+        </div>
+
+        <h2>Vagões com Irregularidades</h2>
+        <div id="listaIrregularidades"></div>
+        <br>
+        <button type="button" class="botao" onclick="adicionarIrregularidade()">+ Adicionar Vagão com Irregularidade</button>
+
+        <h2>Observações Gerais</h2>
+        <div class="campo">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" rows="6"></textarea>
+        </div>
+
+        <h2>Responsáveis</h2>
+        <div class="grid">
+            <div class="campo"><label for="fiscal">Responsável pelo Preenchimento</label><input type="text" id="fiscal"></div>
+            <div class="campo"><label for="matricula">Matrícula</label><input type="text" id="matricula"></div>
+            <div class="campo"><label for="empresaResp">Responsável pela Empresa</label><input type="text" id="empresaResp"></div>
+            <div class="campo"><label for="cpfResp">CPF</label><input type="text" id="cpfResp"></div>
+        </div>
+
+        <h2>Assinatura do AAF/AEA</h2>
+        <canvas id="assinaturaFiscal" class="assinatura"></canvas>
+        <button type="button" class="btn-limpar" onclick="limparAssinatura('assinaturaFiscal')">Limpar Assinatura</button>
+
+        <h2>Assinatura da Empresa</h2>
+        <canvas id="assinaturaEmpresa" class="assinatura"></canvas>
+        <button type="button" class="btn-limpar" onclick="limparAssinatura('assinaturaEmpresa')">Limpar Assinatura</button>
+
+        <br><br>
+        <button class="botao" onclick="gerarPDF()">Gerar PDF</button>
+        <button class="botao" onclick="salvarVistoria()">Salvar Vistoria</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function interceptarEConfigurarInputCamera(input) {
+            if (!input || input.getAttribute('data-camera-pronto')) return;
+            input.setAttribute('accept', 'image/*');
+            input.setAttribute('capture', 'environment');
+            input.removeAttribute('multiple');
+            input.setAttribute('data-camera-pronto', 'true');
+
+            input.addEventListener('change', function(e) {
+                // Lê o primeiro arquivo selecionado da lista
+                var arquivo = e.target.files[0];
+                
+                if (arquivo && arquivo.type.match('image.*')) {
+                    var leitor = new FileReader();
+                    leitor.readAsDataURL(arquivo);
+                    leitor.onload = function(event) {
+                        var img = new Image();
+                        img.src = event.target.result;
+                        img.onload = function() {
+                            var canvas = document.createElement('canvas');
+                            var max_size = 800; // Resolução ideal para caber no PDF sem travar
+                            var width = img.width;
+                            var height = img.height;
+                            
+                            if (width > height) {
+                                if (width > max_size) { height *= max_size / width; width = max_size; }
+                            } else {
+                                if (height > max_size) { width *= max_size / height; height = max_size; }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            // Gera a string Base64 da imagem
+                            var dadosImagemBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                            // Busca a div do preview dentro do bloco pai direto
+                            var containerPreview = input.parentElement.querySelector('.preview-foto-pdf');
+                            if (containerPreview) {
+                                containerPreview.innerHTML = '<img src="' + dadosImagemBase64 + '" style="max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; display: block; page-break-inside: avoid; break-inside: avoid;">';
+                            }
+
+                            // Preserva o arquivo comprimido anexado de forma leve
+                            canvas.toBlob(function(blob) {
+                                var arquivoLeve = new File([blob], arquivo.name, {type: 'image/jpeg', lastModified: Date.now()});
+                                var dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(arquivoLeve);
+                                input.files = dataTransfer.files;
+                            }, 'image/jpeg', 0.7);
+                        };
+                    };
+                }
+            });
+}
+
+        function salvarVistoria() {
+            alert("Vistoria salva com sucesso!");
+        }
+
+        function configurarCanvas(id) {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            var larguraIdeal = canvas.parentElement ? canvas.parentElement.offsetWidth : 600;
+            if (larguraIdeal < 200) larguraIdeal = 600;
+            canvas.width = larguraIdeal;
+            canvas.height = 150;
+            let desenhando = false;
+
+            function iniciar(e) {
+                desenhando = true;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.beginPath(); ctx.moveTo(x, y);
+            }
+            function desenhar(e) {
+                if (!desenhando) return; e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineTo(x, y); ctx.stroke();
+            }
+            function parar() { desenhando = false; }
+            canvas.addEventListener("mousedown", iniciar); canvas.addEventListener("mousemove", desenhar);
+            canvas.addEventListener("mouseup", parar); canvas.addEventListener("mouseleave", parar);
+            canvas.addEventListener("touchstart", iniciar); canvas.addEventListener("touchmove", desenhar);
+            canvas.addEventListener("touchend", parar);
+        }
+
+        function limparAssinatura(id) {
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.onload = function() {
+            configurarCanvas("assinaturaFiscal");
+            configurarCanvas("assinaturaEmpresa");
+            obterCoordenadas();
+        };
+
+        let contadorIrregularidades = 0;
+        function adicionarIrregularidade() {
+            contadorIrregularidades++;
+            const container = document.getElementById("listaIrregularidades");
+            const bloco = document.createElement("div");
+            bloco.className = "card-irregularidade";
+            bloco.id = "irregularidade" + contadorIrregularidades;
+            bloco.innerHTML = `
+                <h3>Vagão ${contadorIrregularidades}</h3>
+                <div class="grid">
+                    <div class="campo"><label>Número do Vagão</label><input type="text" class="numeroVagao"></div>
+                    <div class="campo">
+                        <label>Irregularidades Encontradas</label>
+                        <label><input type="checkbox" class="irregularidade" value="Vazamento"> Vazamento</label>
+                        <label><input type="checkbox" class="irregularidade" value="Contaminação"> Contaminação</label>
+                        <label><input type="checkbox" class="irregularidade" value="Painel"> Painel</label>
+                        <label><input type="checkbox" class="irregularidade" value="Rótulo"> Rótulo</label>
+                    </div>
+                </div>
+                <div class="campo"><label>Descrição</label><textarea class="descricaoIrregularidade" rows="3"></textarea></div>
+                <div class="campo">
+                    <div class="bloco-upload-camera" style="page-break-inside: avoid; break-inside: avoid;">
+                        <label class="ignorar-no-pdf">📸 Tirar Foto da Irregularidade:</label>
+                        <input type="file" class="fotoIrregularidade ocultar-input-pdf">
+                        <!-- O PREVIEW FOI MOVIDO PARA CÁ PARA O SCRIPT LOCALIZAR EXATAMENTE -->
+                        <div class="preview-foto-pdf" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn-remover" onclick="removerIrregularidade('${bloco.id}')">Remover</button>
+            `;
+            container.appendChild(bloco);
+            interceptarEConfigurarInputCamera(bloco.querySelector(".fotoIrregularidade"));
+        }
+
+        function removerIrregularidade(id) { document.getElementById(id).remove(); }
+
+        function adicionarMembro() {
+            const lista = document.getElementById("listaEquipe");
+            const linha = document.createElement("div");
+            linha.className = "membro-equipe";
+            linha.innerHTML = '<input type="text" class="membroEquipe"> <button type="button" class="btn-remover" onclick="removerMembro(this)">Remover</button>';
+            lista.appendChild(linha);
+        }
+
+        function removerMembro(botao) {
+            const lista = document.getElementById("listaEquipe");
+            if (lista.children.length <= 1) return;
+            botao.closest(".membro-equipe").remove();
+        }
+
+        function obterCoordenadas() {
+            const campo = document.getElementById("coordenadas");
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(p) {
+                    campo.value = p.coords.latitude.toFixed(6) + ", " + p.coords.longitude.toFixed(6);
+                });
+            }
+        }
+
+        function mostrarDesacordo(id) {
+            const campo = document.getElementById(id);
+            campo.style.display = (campo.style.display === "block") ? "none" : "block";
+        }
+
+        function gerarPDF() {
+            const elemento = document.getElementById("conteudoFormulario");
+            const botoes = elemento.querySelectorAll("button, .btn-limpar, .btn-remover");
+            
+            // 1. Oculta os botões operacionais
+            botoes.forEach(b => b.classList.add("ignorar-no-pdf"));
+
+            // 2. Cria um bloco de estilo forçado para injetar no motor do html2pdf
+            const estiloForcado = document.createElement("style");
+            estiloForcado.id = "estilo-temporario-pdf";
+            // Força o sumiço completo da caixa nativa de seleção e de textos fakepath
+            estiloForcado.innerHTML = `
+                .ocultar-input-pdf, input[type="file"], .fotoIrregularidade { 
+                    display: none !important; 
+                    visibility: hidden !important; 
+                    opacity: 0 !important;
+                    height: 0 !important;
+                    padding: 0 !important;
+                }
+            `;
+            elemento.appendChild(estiloForcado);
+
+            const opt = {
+                margin:       15,
+                filename:     'TFPP.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css'] }
+            };
+
+            // 3. Executa a compilação direta do PDF
+            html2pdf().set(opt).from(elemento).toPdf().get('pdf').then(function (pdf) {
+                // 4. Remove as classes e o estilo temporário para o formulário voltar ao normal na tela
+                botoes.forEach(b => b.classList.remove("ignorar-no-pdf"));
+                const estiloRemover = document.getElementById("estilo-temporario-pdf");
+                if (estiloRemover) estiloRemover.remove();
+            }).save();
+        }
+    </script>
+
+    <script>
+        // Registro do service worker (funcionamento offline)
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("sw.js").catch(function (e) {
+                    console.warn("Service worker não registrado:", e);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

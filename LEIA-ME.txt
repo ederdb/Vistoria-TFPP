@@ -1,0 +1,9 @@
+TFPP - instalação como aplicativo (PWA)
+
+1) Publicar (uma vez só): envie TODOS os arquivos desta pasta para uma hospedagem HTTPS
+   gratuita (Netlify Drop, Cloudflare Pages ou GitHub Pages). O arquivo principal é index.html.
+2) No celular, abra o endereço gerado, com internet, e conceda a permissão de localização.
+3) Instale: Android/Chrome: menu > Instalar app. iPhone/Safari: Compartilhar > Adicionar à Tela de Início.
+4) Abra o app instalado uma vez com internet (para guardar tudo no aparelho). Depois funciona offline.
+
+Para publicar uma nova versão: substitua index.html e troque "tfpp-v1" por "tfpp-v2" em sw.js.
